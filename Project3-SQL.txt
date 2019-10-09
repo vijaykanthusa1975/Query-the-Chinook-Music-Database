@@ -1,0 +1,78 @@
+--query1 - Top 15 Rock Music listeners by count of songs lisntened
+
+SELECT c.Email AS Email,
+       (c.firstname || ' ' ||c.lastname) AS CUST_Name,
+       g.Name AS genre_name,
+       count(*) AS CNT
+FROM customer c
+JOIN invoice i ON i.customerid=c.customerid
+JOIN InvoiceLine il ON il.invoiceid=i.InvoiceId
+JOIN track t ON t.trackid=il.TrackId
+JOIN genre g ON g.genreid=t.genreid
+WHERE g.Name = 'Rock'
+GROUP BY 1
+ORDER BY 4 DESC
+LIMIT 15;
+
+---End of query 1
+
+---query 2 - Top 10 Rock Bands with  total track count
+
+SELECT a.artistid AS ARTIST_ID,
+       a.name AS ARTIST_NAME,
+       COUNT(*) AS CNT
+FROM artist a
+JOIN album ab ON a.artistid=ab.artistid
+JOIN track t ON t.albumid=ab.albumid
+JOIN genre g ON g.genreid=t.genreid
+WHERE g.Name = 'Rock'
+GROUP BY 1,
+         2
+ORDER BY 3 DESC
+LIMIT 10;
+
+---End of query 2
+
+--query 3 - Artist Earnings by Amount Spent
+
+SELECT a.name AS ARTIST_NAME,
+       count(*)*il.UnitPrice AS AMT_Spent
+FROM artist a
+JOIN album ab ON a.artistid=ab.artistid
+JOIN track t ON t.albumid=ab.albumid
+JOIN invoiceline il ON il.TrackId=t.TrackId
+GROUP BY 1
+ORDER BY 2 DESC;
+
+--End of query 3 
+
+--Query 4 -- Top 10 Customers who spent the most on top earning artist
+
+SELECT c.CustomerId AS ID,
+       c.Email AS Email,
+       (c.firstname || ' ' ||c.lastname) AS CUST_Name,
+       a.name AS nam,
+       count(*)*il.UnitPrice AS AMT_SPENT
+FROM customer c
+JOIN invoice i ON i.customerid=c.customerid
+JOIN InvoiceLine il ON il.invoiceid=i.InvoiceId
+JOIN track t ON t.trackid=il.TrackId
+JOIN album ab ON t.albumid=ab.albumid
+JOIN artist a ON a.artistid=ab.artistid
+WHERE a.Name =
+    (SELECT a.name AS ARTIST_NAME
+     FROM artist a
+     JOIN album ab ON a.artistid=ab.artistid
+     JOIN track t ON t.albumid=ab.albumid
+     JOIN invoiceline il ON il.TrackId=t.TrackId
+     GROUP BY 1
+     ORDER BY count(*)*il.UnitPrice DESC
+     LIMIT 1)
+GROUP BY 1,
+         2,
+         3,
+         4
+ORDER BY 5 DESC
+LIMIT 10;
+
+--End of Query 4
